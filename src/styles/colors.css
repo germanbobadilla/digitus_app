@@ -1,0 +1,62 @@
+/* Digitus Brand Colors */
+:root {
+  /* Primary Brand Colors */
+  --digitus-accent: #5271ff;
+  --digitus-dark: #000937;
+
+  /* Accent Color Variations */
+  --digitus-accent-50: #f0f4ff;
+  --digitus-accent-100: #e0e9ff;
+  --digitus-accent-200: #c7d7ff;
+  --digitus-accent-300: #a5b8ff;
+  --digitus-accent-400: #8190ff;
+  --digitus-accent-500: #5271ff;
+  --digitus-accent-600: #3d5ce6;
+  --digitus-accent-700: #2d44cc;
+  --digitus-accent-800: #1f2e99;
+  --digitus-accent-900: #0f1a66;
+
+  /* Dark Color Variations */
+  --digitus-dark-50: #f0f1f7;
+  --digitus-dark-100: #e0e2ef;
+  --digitus-dark-200: #c1c5df;
+  --digitus-dark-300: #a2a8cf;
+  --digitus-dark-400: #838bbf;
+  --digitus-dark-500: #646eaf;
+  --digitus-dark-600: #4a5299;
+  --digitus-dark-700: #303683;
+  --digitus-dark-800: #161a6d;
+  --digitus-dark-900: #000937;
+
+  /* Semantic Colors */
+  --digitus-primary: var(--digitus-accent);
+  --digitus-secondary: var(--digitus-dark);
+  --digitus-success: #10b981;
+  --digitus-warning: #f59e0b;
+  --digitus-error: #ef4444;
+  --digitus-info: var(--digitus-accent);
+
+  /* Background Colors */
+  --digitus-bg-primary: #ffffff;
+  --digitus-bg-secondary: #f8fafc;
+  --digitus-bg-tertiary: #f1f5f9;
+  --digitus-bg-dark: var(--digitus-dark);
+
+  /* Text Colors */
+  --digitus-text-primary: var(--digitus-dark);
+  --digitus-text-secondary: #64748b;
+  --digitus-text-tertiary: #94a3b8;
+  --digitus-text-inverse: #ffffff;
+
+  /* Border Colors */
+  --digitus-border-light: #e2e8f0;
+  --digitus-border-medium: #cbd5e1;
+  --digitus-border-dark: #94a3b8;
+}
+
+
+
+
+
+
+

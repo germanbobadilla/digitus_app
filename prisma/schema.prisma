@@ -1,0 +1,225 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../src/generated/prisma"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id                   String    @id @default(cuid())
+    userId               Int       @unique @default(0) // Sequential user ID starting from 0
+    email                String    @unique
+    name                 String
+    createdAt            DateTime  @default(now())
+    updatedAt            DateTime  @updatedAt
+    password             String?
+    address              String?
+    avatar               String?
+    bio                  String?
+    businessType         String?
+    city                 String?
+    companyName          String?
+    companySize          String?
+    country              String?
+    degree               String?
+    graduationYear       Int?
+    industry             String?
+    institutionName      String?
+    isActive             Boolean   @default(true)
+    jobTitle             String?
+    lastLoginAt          DateTime?
+    major                String?
+    phoneNumber          String?
+    postalCode           String?
+    preferredLanguage    String?   @default("en")
+    registrationNumber   String?
+    state                String?
+    studentId            String?
+    taxId                String?
+    timezone             String?   @default("UTC")
+    userType             UserType  @default(REGULAR)
+    website              String?
+    image                String?
+    emailVerified        DateTime?
+    accounts             Account[]
+    assignedOrders       Order[]   @relation("AssignedOrders")
+    orders               Order[]
+    paymentConfirmations Payment[] @relation("PaymentConfirmations")
+    sessions             Session[]
+
+    @@map("users")
+}
+
+model Service {
+    id               String   @id @default(cuid())
+    serviceId        Int      @unique @default(0) // Sequential service ID starting from 0
+    name             String   @unique
+    description      String?  @db.Text
+    price            Decimal  @db.Decimal(10, 2)
+    isActive         Boolean  @default(true)
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
+    category         String?
+    deliveryTime     String?
+    features         String?  @db.Text
+    image            String?
+    shortDescription String?
+    customFields     String?  @db.Text
+    serviceType      String?
+    webDesignType    String?
+    orders           Order[]
+
+    @@index([serviceType])
+    @@index([category])
+    @@index([isActive])
+    @@index([createdAt])
+    @@map("services")
+}
+
+model Order {
+    id            String               @id @default(cuid())
+    orderId       Int                  @unique @default(0) // Sequential order ID starting from 0
+    userId        String
+    serviceId     String
+    price         Decimal              @db.Decimal(10, 2)
+    status        OrderStatus          @default(PENDING)
+    createdAt     DateTime             @default(now())
+    updatedAt     DateTime             @updatedAt
+    quantity      Int                  @default(1)
+    totalPrice    Decimal              @default(0.00) @db.Decimal(10, 2)
+    webDesignType String?
+    adminNotes    String?
+    assignedTo    String?
+    orderNumber   String               @unique
+    priority      OrderPriority        @default(NORMAL)
+    statusHistory OrderStatusHistory[]
+    assignedAdmin User?                @relation("AssignedOrders", fields: [assignedTo], references: [id])
+    service       Service              @relation(fields: [serviceId], references: [id])
+    user          User                 @relation(fields: [userId], references: [id])
+    payments      Payment[]
+
+    @@index([userId])
+    @@index([serviceId])
+    @@index([status])
+    @@index([assignedTo])
+    @@index([createdAt])
+    @@map("orders")
+}
+
+model Payment {
+    id              String        @id @default(cuid())
+    paymentId       Int           @unique @default(0) // Sequential payment ID starting from 0
+    orderId         String
+    amount          Decimal       @db.Decimal(10, 2)
+    method          PaymentMethod
+    referenceNo     String?
+    status          PaymentStatus @default(PENDING)
+    paidAt          DateTime?
+    confirmedAt     DateTime?
+    createdAt       DateTime      @default(now())
+    updatedAt       DateTime      @updatedAt
+    adminNotes      String?
+    confirmedBy     String?
+    paymentNumber   String        @unique
+    transactionId   String?       @unique
+    confirmedByUser User?         @relation("PaymentConfirmations", fields: [confirmedBy], references: [id])
+    order           Order         @relation(fields: [orderId], references: [id])
+
+    @@index([orderId])
+    @@index([status])
+    @@index([transactionId])
+    @@index([confirmedBy])
+    @@index([createdAt])
+    @@map("payments")
+}
+
+model OrderStatusHistory {
+    id        String      @id @default(cuid())
+    orderId   String
+    status    OrderStatus
+    note      String?
+    changedAt DateTime    @default(now())
+    order     Order       @relation(fields: [orderId], references: [id])
+
+    @@index([orderId], map: "order_status_history_orderId_fkey")
+    @@map("order_status_history")
+}
+
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+    @@index([userId], map: "accounts_userId_fkey")
+    @@map("accounts")
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId], map: "sessions_userId_fkey")
+    @@map("sessions")
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+    @@map("verification_tokens")
+}
+
+enum UserType {
+    REGULAR
+    CORPORATION
+    EDUCATION
+    ADMIN
+}
+
+enum OrderStatus {
+    PENDING
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+enum PaymentMethod {
+    CASH
+    CARD
+    BANK_TRANSFER
+    DIGITAL_WALLET
+    CRYPTOCURRENCY
+}
+
+enum PaymentStatus {
+    PENDING
+    PROCESSING
+    COMPLETED
+    FAILED
+    REFUNDED
+}
+
+enum OrderPriority {
+    LOW
+    NORMAL
+    HIGH
+}
