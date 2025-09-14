@@ -4,21 +4,30 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/NextAuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { DashboardLayout } from '@/components/DashboardLayout'
+import ServiceCreationForm from '@/components/ServiceCreationForm'
+import { useCapabilities } from '@/hooks/useCapabilities'
+import { CAPABILITIES } from '@/lib/capabilities'
 
 interface Service {
     id: string
+    serviceId: number
     name: string
     shortDescription?: string
     description?: string
     price: number
     category?: string
-    features?: string
-    deliveryTime?: string
-    image?: string
     serviceType?: string
-    customFields?: string
-    webDesignType?: string
+    webDesignType?: string // Only relevant when serviceType = 'web-design'
+    deliveryTime?: string
+    duration?: string
+    isOnline?: boolean
+    features?: string
+    image?: string
+    customFields?: string // JSON string containing custom data
+    phases?: string // JSON string containing phases data
     isActive: boolean
+    createdAt: string
+    updatedAt: string
 }
 
 interface CustomFields {
@@ -28,6 +37,7 @@ interface CustomFields {
 export default function ServicesPage() {
     const { user } = useAuth()
     const { t } = useLanguage()
+    const { hasCapability } = useCapabilities()
     const [services, setServices] = useState<Service[]>([])
     const [loading, setLoading] = useState(true)
     const [ordering, setOrdering] = useState<string | null>(null)
@@ -36,6 +46,17 @@ export default function ServicesPage() {
     const [webDesignTypes, setWebDesignTypes] = useState<Record<string, string>>({})
     const [showSuccessModal, setShowSuccessModal] = useState(false)
     const [createdOrder, setCreatedOrder] = useState<any>(null)
+    const [showCreateForm, setShowCreateForm] = useState(false)
+
+    const canCreateServices = hasCapability(CAPABILITIES.SERVICE_CREATE)
+    const canDeleteServices = hasCapability(CAPABILITIES.SERVICE_DELETE)
+
+    // Handle service creation success
+    const handleServiceCreated = (newService: Service) => {
+        setServices(prev => [newService, ...prev])
+        setShowCreateForm(false)
+        alert('Service created successfully!')
+    }
 
     // Fetch services on component mount
     useEffect(() => {
@@ -189,34 +210,23 @@ export default function ServicesPage() {
             </div>
 
             {/* Admin Controls */}
-            {user?.userType === 'ADMIN' && (
+            {canCreateServices && (
                 <div className="mb-6">
                     <button
-                        onClick={async () => {
-                            const name = prompt('Service name:')
-                            if (!name) return
-                            const priceStr = prompt('Price (e.g. 99.99):')
-                            if (!priceStr) return
-                            const price = parseFloat(priceStr)
-                            if (Number.isNaN(price)) return alert('Invalid price')
-                            const res = await fetch('/api/services', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ name, price })
-                            })
-                            if (res.ok) {
-                                const created = await res.json()
-                                setServices(prev => [created, ...prev])
-                            } else {
-                                const err = await res.json().catch(() => ({}))
-                                alert(err.error || 'Failed to create service')
-                            }
-                        }}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                        onClick={() => setShowCreateForm(true)}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                     >
-                        Create Service
+                        Create New Service
                     </button>
                 </div>
+            )}
+
+            {/* Service Creation Modal */}
+            {showCreateForm && (
+                <ServiceCreationForm
+                    onSuccess={handleServiceCreated}
+                    onCancel={() => setShowCreateForm(false)}
+                />
             )}
 
             {/* Services List */}
@@ -289,7 +299,7 @@ export default function ServicesPage() {
                                         </button>
 
                                         {/* Admin actions */}
-                                        {user?.userType === 'ADMIN' && (
+                                        {canDeleteServices && (
                                             <div className="flex items-center space-x-2">
                                                 <button
                                                     onClick={async () => {
@@ -380,58 +390,14 @@ export default function ServicesPage() {
                                         )}
 
                                         {/* Web Design Type Selection - Only for Web Design services */}
-                                        {service.serviceType === 'web-design' && (
+                                        {/* Website Type Display */}
+                                        {service.serviceType === 'web-design' && service.webDesignType && (
                                             <div className="bg-white p-4 rounded-lg border border-gray-200">
                                                 <h4 className="font-semibold text-gray-900 mb-3">Website Type</h4>
-                                                <p className="text-sm text-gray-600 mb-4">Choose the type of website you need:</p>
-                                                <div className="space-y-3">
-                                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                                        <input
-                                                            type="radio"
-                                                            name={`webDesignType-${service.id}`}
-                                                            value="wordpress"
-                                                            checked={webDesignTypes[service.id] === 'wordpress'}
-                                                            onChange={(e) => handleWebDesignTypeChange(service.id, e.target.value)}
-                                                            className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                                                        />
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center">
-                                                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                                                    </svg>
-                                                                </div>
-                                                                <div>
-                                                                    <div className="font-medium text-gray-900">WordPress</div>
-                                                                    <div className="text-sm text-gray-500">Easy-to-manage CMS with themes and plugins</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </label>
-
-                                                    <label className="flex items-center space-x-3 cursor-pointer">
-                                                        <input
-                                                            type="radio"
-                                                            name={`webDesignType-${service.id}`}
-                                                            value="dynamic-html"
-                                                            checked={webDesignTypes[service.id] === 'dynamic-html'}
-                                                            onChange={(e) => handleWebDesignTypeChange(service.id, e.target.value)}
-                                                            className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                                                        />
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center">
-                                                                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                                                                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                                                    </svg>
-                                                                </div>
-                                                                <div>
-                                                                    <div className="font-medium text-gray-900">Dynamic HTML</div>
-                                                                    <div className="text-sm text-gray-500">Custom-built website with modern frameworks</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </label>
+                                                <div className="p-3 bg-gray-50 rounded-lg">
+                                                    <div className="font-medium text-gray-900 capitalize">
+                                                        {service.webDesignType.replace('-', ' ')}
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
@@ -440,17 +406,21 @@ export default function ServicesPage() {
                                         <div>
                                             <h4 className="font-semibold text-gray-900 mb-3">Features</h4>
                                             <ul className="space-y-2">
-                                                {(service.features || 'Quality service\nProfessional support\nFast delivery')
-                                                    .split('\n')
-                                                    .filter(feature => feature.trim())
-                                                    .map((feature, index) => (
-                                                        <li key={index} className="flex items-start text-sm text-gray-600">
-                                                            <svg className="w-4 h-4 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                            {feature}
-                                                        </li>
-                                                    ))}
+                                                {service.features ? (
+                                                    service.features
+                                                        .split('\n')
+                                                        .filter(feature => feature.trim())
+                                                        .map((feature, index) => (
+                                                            <li key={index} className="flex items-start text-sm text-gray-600">
+                                                                <svg className="w-4 h-4 mr-2 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                                {feature}
+                                                            </li>
+                                                        ))
+                                                ) : (
+                                                    <li className="text-sm text-gray-500 italic">No features specified</li>
+                                                )}
                                             </ul>
                                         </div>
 

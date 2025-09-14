@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/NextAuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { DashboardLayout } from '@/components/DashboardLayout'
+import { useCapabilities } from '@/hooks/useCapabilities'
+import PermissionDenied from '@/components/PermissionDenied'
+import { CAPABILITIES } from '@/lib/capabilities'
 
 interface Order {
     id: string
@@ -27,20 +30,35 @@ interface Order {
 export default function OrdersPage() {
     const { user } = useAuth()
     const { t } = useLanguage()
+    const { hasCapability, loading: capabilitiesLoading } = useCapabilities()
     const [orders, setOrders] = useState<Order[]>([])
     const [loading, setLoading] = useState(true)
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
     const [deletingOrder, setDeletingOrder] = useState<string | null>(null)
     const [showDeleteModal, setShowDeleteModal] = useState<{ show: boolean; order: Order | null }>({ show: false, order: null })
 
+    // Check if user has permission to view orders
+    const canViewOwnOrders = hasCapability(CAPABILITIES.ORDER_VIEW_OWN)
+    const canViewAllOrders = hasCapability(CAPABILITIES.ORDER_VIEW_ALL)
+    const canDeleteOwnOrders = hasCapability(CAPABILITIES.ORDER_DELETE_OWN)
+    const canDeleteAllOrders = hasCapability(CAPABILITIES.ORDER_DELETE_ALL)
+
     // Fetch orders on component mount
     useEffect(() => {
+        if (!canViewOwnOrders && !canViewAllOrders) {
+            setLoading(false)
+            return
+        }
+
         const fetchOrders = async () => {
             try {
                 const response = await fetch('/api/orders')
                 if (response.ok) {
                     const data = await response.json()
                     setOrders(data)
+                } else if (response.status === 403) {
+                    // Permission denied
+                    setOrders([])
                 }
             } catch (error) {
                 console.error('Error fetching orders:', error)
@@ -50,7 +68,7 @@ export default function OrdersPage() {
         }
 
         fetchOrders()
-    }, [])
+    }, [canViewOwnOrders, canViewAllOrders])
 
     // Calculate order statistics
     const totalOrders = orders.length
@@ -153,12 +171,24 @@ export default function OrdersPage() {
         }
     }
 
-    if (loading) {
+    if (loading || capabilitiesLoading) {
         return (
             <DashboardLayout>
                 <div className="flex items-center justify-center h-64">
                     <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
                 </div>
+            </DashboardLayout>
+        )
+    }
+
+    // Check if user has permission to view orders
+    if (!canViewOwnOrders && !canViewAllOrders) {
+        return (
+            <DashboardLayout>
+                <PermissionDenied
+                    action="view orders"
+                    capability={CAPABILITIES.ORDER_VIEW_OWN}
+                />
             </DashboardLayout>
         )
     }
@@ -323,8 +353,8 @@ export default function OrdersPage() {
                                                 </svg>
                                             </button>
 
-                                            {/* Delete Button - Only for pending orders */}
-                                            {order.status === 'PENDING' && (
+                                            {/* Delete Button - Only for pending orders and if user has permission */}
+                                            {order.status === 'PENDING' && (canDeleteOwnOrders || canDeleteAllOrders) && (
                                                 <button
                                                     onClick={() => handleDeleteOrder(order)}
                                                     disabled={deletingOrder === order.id}

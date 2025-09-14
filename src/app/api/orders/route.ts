@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getNextSequentialId, generateDisplayIds } from '@/lib/sequential-ids'
+import { hasCapability } from '@/lib/auth-utils'
+import { CAPABILITIES } from '@/lib/capabilities'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +14,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      )
+    }
+
+    // Check if user has permission to create orders
+    const canCreateOrders = await hasCapability(CAPABILITIES.ORDER_CREATE)
+    if (!canCreateOrders) {
+      return NextResponse.json(
+        { error: 'You do not have permission to create orders' },
+        { status: 403 }
       )
     }
 
@@ -99,10 +110,28 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Check if user has permission to view orders
+    const canViewOwnOrders = await hasCapability(CAPABILITIES.ORDER_VIEW_OWN)
+    const canViewAllOrders = await hasCapability(CAPABILITIES.ORDER_VIEW_ALL)
+
+    if (!canViewOwnOrders && !canViewAllOrders) {
+      return NextResponse.json(
+        { error: 'You do not have permission to view orders' },
+        { status: 403 }
+      )
+    }
+
+    // Build where clause based on permissions
+    const whereClause: any = {}
+    if (canViewAllOrders) {
+      // User can view all orders, no restriction needed
+    } else if (canViewOwnOrders) {
+      // User can only view their own orders
+      whereClause.userId = session.user.id
+    }
+
     const orders = await prisma.order.findMany({
-      where: {
-        userId: session.user.id
-      },
+      where: whereClause,
       include: {
         service: {
           select: {

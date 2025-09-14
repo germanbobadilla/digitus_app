@@ -84,7 +84,7 @@ export function NextAuthProvider({ children }: { children: React.ReactNode }) {
             id: session.user.id || '',
             name: session.user.name || '',
             email: session.user.email || '',
-            image: session.user.image,
+            image: session.user.image || undefined,
             userType: session.user.userType,
         } : null,
         isLoading,

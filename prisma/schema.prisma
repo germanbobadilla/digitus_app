@@ -44,11 +44,13 @@ model User {
     website              String?
     image                String?
     emailVerified        DateTime?
+    roleId               String? // New field for role assignment
     accounts             Account[]
     assignedOrders       Order[]   @relation("AssignedOrders")
     orders               Order[]
     paymentConfirmations Payment[] @relation("PaymentConfirmations")
     sessions             Session[]
+    role                 Role?     @relation(fields: [roleId], references: [id])
 
     @@map("users")
 }
@@ -57,25 +59,51 @@ model Service {
     id               String   @id @default(cuid())
     serviceId        Int      @unique @default(0) // Sequential service ID starting from 0
     name             String   @unique
-    description      String?  @db.Text
+    shortDescription String? // Brief description for service cards
+    description      String?  @db.Text // Comprehensive description
     price            Decimal  @db.Decimal(10, 2)
     isActive         Boolean  @default(true)
     createdAt        DateTime @default(now())
     updatedAt        DateTime @updatedAt
-    category         String?
-    deliveryTime     String?
-    features         String?  @db.Text
-    image            String?
-    shortDescription String?
-    customFields     String?  @db.Text
-    serviceType      String?
-    webDesignType    String?
-    orders           Order[]
+
+    // Basic Classification
+    category    String? // Web Design, Development, Hosting, Content, Marketing, Consulting, Support, Other
+    serviceType String? // web-design, development, hosting, content-writing, marketing, consulting, support, other
+
+    // Conditional Fields (only relevant for certain service types)
+    webDesignType String? // Landing Page, Corporate Website, E-commerce, Portfolio, Blog, Custom Application, Other (only when serviceType = 'web-design')
+
+    // Delivery & Timing
+    deliveryTime String? // e.g., "7-14 days", "Instant", "3-5 days"
+    duration     String? // 1-3 days, 1 week, 2 weeks, 1 month, 2-3 months, 3-6 months, 6+ months, Ongoing
+    isOnline     Boolean @default(true) // Online vs In Person delivery
+
+    // Service Details
+    features String? @db.Text // Key features, one per line
+    image    String? // Service image URL
+
+    // Custom Fields (flexible JSON storage for additional information)
+    customFields String? @db.Text // JSON string containing:
+    // - pagesIncluded: number (number of pages included)
+    // - revisions: number (number of revisions included)
+    // - technologies: string (e.g., "React, Node.js, MongoDB")
+    // - Any other custom fields based on service type
+
+    // Phases/Stages (optional structured data for service phases)
+    phases String? @db.Text // JSON string containing:
+    // - showPhases: boolean (whether to show phases)
+    // - phases: array of { name: string, description: string }
+    // Example: {"showPhases": true, "phases": [{"name": "Phase 1", "description": "Meeting"}, {"name": "Phase 2", "description": "Collection"}]}
+
+    // Relationships
+    orders Order[]
 
     @@index([serviceType])
     @@index([category])
     @@index([isActive])
     @@index([createdAt])
+    @@index([webDesignType])
+    @@index([isOnline])
     @@map("services")
 }
 
@@ -222,4 +250,33 @@ enum OrderPriority {
     LOW
     NORMAL
     HIGH
+}
+
+model Role {
+    id          String   @id @default(cuid())
+    name        String   @unique
+    description String?
+    isActive    Boolean  @default(true)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    // Relations
+    capabilities RoleCapability[]
+    users        User[]
+
+    @@map("roles")
+}
+
+model RoleCapability {
+    id         String   @id @default(cuid())
+    roleId     String
+    capability String // e.g., "can_create_orders"
+    isGranted  Boolean  @default(true)
+    createdAt  DateTime @default(now())
+
+    // Relations
+    role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+    @@unique([roleId, capability], name: "roleId_capability")
+    @@map("role_capabilities")
 }

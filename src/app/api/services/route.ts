@@ -3,13 +3,21 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getNextSequentialId, generateDisplayIds } from '@/lib/sequential-ids'
+import { hasCapability } from '@/lib/auth-utils'
+import { CAPABILITIES } from '@/lib/capabilities'
 
 async function ensureSeedServices() {
-  const count = await prisma.service.count({ where: { isActive: true } })
-  if (count > 0) return
+  try {
+    const count = await prisma.service.count({ where: { isActive: true } })
+    if (count > 0) {
+      console.log(`Found ${count} existing services, skipping seed`)
+      return
+    }
 
-  await prisma.service.createMany({
-    data: [
+    console.log('No services found, seeding default services...')
+
+    // Create services one by one with proper sequential IDs
+    const services = [
       {
         name: 'Web Design Package',
         shortDescription: 'Modern responsive website design',
@@ -24,6 +32,8 @@ async function ensureSeedServices() {
           revisions: 2,
           technologies: ['Next.js', 'TailwindCSS'],
         }),
+        isOnline: true,
+        duration: '7-14 days',
         isActive: true,
       },
       {
@@ -39,6 +49,8 @@ async function ensureSeedServices() {
           storageGb: 10,
           bandwidthTb: 1,
         }),
+        isOnline: true,
+        duration: 'Ongoing',
         isActive: true,
       },
       {
@@ -54,16 +66,44 @@ async function ensureSeedServices() {
           wordsPerArticle: 1000,
           includesEditing: true,
         }),
+        isOnline: true,
+        duration: '3-5 days',
         isActive: true,
       },
-    ],
-  })
+    ]
+
+    // Create each service with proper sequential ID
+    for (let i = 0; i < services.length; i++) {
+      const serviceData = services[i]
+      console.log(`Creating service ${i + 1}: ${serviceData.name}`)
+
+      const nextServiceId = await getNextSequentialId('service')
+      console.log(`Generated serviceId: ${nextServiceId}`)
+
+      const createdService = await prisma.service.create({
+        data: {
+          ...serviceData,
+          serviceId: nextServiceId,
+        },
+      })
+
+      console.log(`✅ Created service with ID: ${createdService.id}, serviceId: ${createdService.serviceId}`)
+    }
+
+    console.log('Default services seeded successfully')
+  } catch (error) {
+    console.error('Error seeding services:', error)
+    console.error('Error details:', {
+      code: error.code,
+      meta: error.meta,
+      message: error.message
+    })
+    throw error
+  }
 }
 
 export async function GET(_request: NextRequest) {
   try {
-    await ensureSeedServices()
-
     const services = await prisma.service.findMany({
       where: { isActive: true },
       orderBy: { createdAt: 'asc' },
@@ -79,11 +119,38 @@ export async function GET(_request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if ((session?.user as any)?.userType !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user has permission to create services
+    const canCreateServices = await hasCapability(CAPABILITIES.SERVICE_CREATE)
+    if (!canCreateServices) {
+      return NextResponse.json(
+        { error: 'You do not have permission to create services' },
+        { status: 403 }
+      )
     }
 
     const body = await request.json()
+
+    // Check if user has permission to set service price
+    const canSetPrice = await hasCapability(CAPABILITIES.SERVICE_SET_PRICE)
+    if (!canSetPrice && body.price > 0) {
+      return NextResponse.json(
+        { error: 'You do not have permission to set service prices' },
+        { status: 403 }
+      )
+    }
+
+    // Check if user has permission to create service phases
+    const canCreatePhases = await hasCapability(CAPABILITIES.SERVICE_CREATE_PHASES)
+    if (!canCreatePhases && body.phases && JSON.parse(body.phases).showPhases) {
+      return NextResponse.json(
+        { error: 'You do not have permission to create service phases' },
+        { status: 403 }
+      )
+    }
     const {
       name,
       description,
@@ -96,6 +163,9 @@ export async function POST(request: NextRequest) {
       serviceType,
       customFields,
       webDesignType,
+      isOnline = true,
+      duration,
+      phases,
       isActive = true,
     } = body
 
@@ -104,40 +174,69 @@ export async function POST(request: NextRequest) {
     }
 
     // Get next sequential service ID
+    console.log('Getting next sequential service ID...')
     const nextServiceId = await getNextSequentialId('service')
+    console.log('Next service ID:', nextServiceId)
     const displayServiceId = generateDisplayIds(nextServiceId, 'service')
+    console.log('Display service ID:', displayServiceId)
 
+    // Debug: Log the data being saved
+    const serviceData = {
+      serviceId: nextServiceId,
+      name,
+      description,
+      shortDescription,
+      // allow number or string, Prisma will coerce to Decimal
+      price: typeof price === 'number' ? price : parseFloat(String(price)),
+      category,
+      features,
+      deliveryTime,
+      image,
+      serviceType,
+      customFields: customFields ? (typeof customFields === 'string' ? customFields : JSON.stringify(customFields)) : null,
+      webDesignType,
+      isOnline,
+      duration,
+      phases: phases ? (typeof phases === 'string' ? phases : JSON.stringify(phases)) : null,
+      isActive,
+    }
+
+    console.log('Creating service with data:', serviceData)
     const created = await prisma.service.create({
-      data: {
-        serviceId: nextServiceId,
-        name,
-        description,
-        shortDescription,
-        // allow number or string, Prisma will coerce to Decimal
-        price: typeof price === 'number' ? price : parseFloat(String(price)),
-        category,
-        features,
-        deliveryTime,
-        image,
-        serviceType,
-        customFields: customFields ? (typeof customFields === 'string' ? customFields : JSON.stringify(customFields)) : null,
-        webDesignType,
-        isActive,
-      },
+      data: serviceData,
     })
+    console.log('Service created successfully:', created)
 
     return NextResponse.json(created, { status: 201 })
   } catch (error) {
     console.error('Error creating service:', error)
-    return NextResponse.json({ error: 'Failed to create service' }, { status: 500 })
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      meta: error.meta,
+      stack: error.stack
+    })
+    return NextResponse.json({
+      error: 'Failed to create service',
+      details: error.message
+    }, { status: 500 })
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if ((session?.user as any)?.userType !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user has permission to edit services
+    const canEditServices = await hasCapability(CAPABILITIES.SERVICE_EDIT)
+    if (!canEditServices) {
+      return NextResponse.json(
+        { error: 'You do not have permission to edit services' },
+        { status: 403 }
+      )
     }
 
     const body = await request.json()
@@ -176,8 +275,14 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if ((session?.user as any)?.userType !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user has permission to delete services
+    const canDeleteServices = await hasCapability(CAPABILITIES.SERVICE_DELETE)
+    if (!canDeleteServices) {
+      return NextResponse.json({ error: 'You do not have permission to delete services' }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)

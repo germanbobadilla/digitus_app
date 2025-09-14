@@ -3,10 +3,26 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
+import { hasCapability } from '@/lib/auth-utils'
+import { CAPABILITIES } from '@/lib/capabilities'
 
 // GET /api/users - Get all users (with pagination)
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user has permission to view users
+    const canViewUsers = await hasCapability(CAPABILITIES.USER_VIEW)
+    if (!canViewUsers) {
+      return NextResponse.json(
+        { error: 'You do not have permission to view users' },
+        { status: 403 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -66,6 +82,20 @@ export async function GET(request: NextRequest) {
 // POST /api/users - Create a new user
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user has permission to create users
+    const canCreateUsers = await hasCapability(CAPABILITIES.USER_CREATE)
+    if (!canCreateUsers) {
+      return NextResponse.json(
+        { error: 'You do not have permission to create users' },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
     const { name, email, password } = body
 
@@ -126,8 +156,17 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if ((session?.user as any)?.userType !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if user has permission to edit users
+    const canEditUsers = await hasCapability(CAPABILITIES.USER_EDIT)
+    if (!canEditUsers) {
+      return NextResponse.json(
+        { error: 'You do not have permission to edit users' },
+        { status: 403 }
+      )
     }
 
     const body = await request.json()

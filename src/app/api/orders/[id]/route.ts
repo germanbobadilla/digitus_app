@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { hasCapability } from '@/lib/auth-utils'
+import { CAPABILITIES } from '@/lib/capabilities'
 
 export async function DELETE(
     request: NextRequest,
@@ -15,6 +17,17 @@ export async function DELETE(
         }
 
         const { id: orderId } = await params
+
+        // Check if user has permission to delete orders
+        const canDeleteOwnOrders = await hasCapability(CAPABILITIES.ORDER_DELETE_OWN)
+        const canDeleteAllOrders = await hasCapability(CAPABILITIES.ORDER_DELETE_ALL)
+
+        if (!canDeleteOwnOrders && !canDeleteAllOrders) {
+            return NextResponse.json(
+                { error: 'You do not have permission to delete orders' },
+                { status: 403 }
+            )
+        }
 
         // Get the order to check ownership and status
         const order = await prisma.order.findUnique({
@@ -32,9 +45,11 @@ export async function DELETE(
             return NextResponse.json({ error: 'Order not found' }, { status: 404 })
         }
 
-        // Check if user owns the order
-        if (order.userId !== session.user.id) {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        // Check ownership based on permissions
+        if (canDeleteAllOrders) {
+            // User can delete any order, no ownership check needed
+        } else if (canDeleteOwnOrders && order.userId !== session.user.id) {
+            return NextResponse.json({ error: 'You can only delete your own orders' }, { status: 403 })
         }
 
         // Check if order can be deleted (only pending orders)
@@ -72,5 +87,9 @@ export async function DELETE(
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
+
+
+
+
 
 

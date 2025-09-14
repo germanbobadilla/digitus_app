@@ -21,7 +21,7 @@ export async function getNextSequentialId(model: 'user' | 'service' | 'order' | 
           orderBy: { serviceId: 'desc' },
           select: { serviceId: true }
         })
-        maxId = maxService?.serviceId || -1
+        maxId = maxService?.serviceId ?? -1
         break
 
       case 'order':
@@ -41,6 +41,10 @@ export async function getNextSequentialId(model: 'user' | 'service' | 'order' | 
         break
     }
 
+    // For services, start from 1 to avoid conflict with @default(0)
+    if (model === 'service' && maxId === -1) {
+      return 1
+    }
     return maxId + 1
   } catch (error) {
     console.error(`Error getting next ${model} ID:`, error)
