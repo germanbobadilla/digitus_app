@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 import { hasCapability } from '@/lib/auth-utils'
 import { CAPABILITIES } from '@/lib/capabilities'
+import { sendWelcomeEmail } from '@/lib/email'
 
 // GET /api/users - Get all users (with pagination)
 export async function GET(request: NextRequest) {
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
           updatedAt: true,
           _count: {
             select: {
-              orders: true
+              projects_projects_userIdTousers: true
             }
           }
         },
@@ -79,25 +80,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/users - Create a new user
+// POST /api/users - Create a new user (public registration)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check if user has permission to create users
-    const canCreateUsers = await hasCapability(CAPABILITIES.USER_CREATE)
-    if (!canCreateUsers) {
-      return NextResponse.json(
-        { error: 'You do not have permission to create users' },
-        { status: 403 }
-      )
-    }
-
+    // No authentication required for registration
     const body = await request.json()
-    const { name, email, password } = body
+    const { name, email, password, userType = 'CLIENT' } = body
 
     // Validation
     if (!name || !email || !password) {
@@ -119,6 +107,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get the appropriate role for the user type
+    const role = await prisma.role.findFirst({
+      where: {
+        name: userType === 'ADMIN' ? 'Admin' : 'Client'
+      }
+    })
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
@@ -127,16 +122,27 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        userType: userType as 'CLIENT' | 'MANAGER' | 'ADMIN',
+        roleId: role?.id || null
       },
       select: {
         id: true,
         name: true,
         email: true,
+        userType: true,
         createdAt: true,
         updatedAt: true
       }
     })
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(user.email, user.name)
+    } catch (error) {
+      console.error('Failed to send welcome email:', error)
+      // Don't fail registration if email fails
+    }
 
     return NextResponse.json({
       message: 'User created successfully',
@@ -195,7 +201,8 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if ((session?.user as any)?.userType !== 'ADMIN') {
+    const userCapabilities = await getUserCapabilities(session.user.id)
+    if (!userCapabilities.includes('can_delete_users')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

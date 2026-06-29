@@ -1,0 +1,108 @@
+{
+  "name": "Acme Corp Website Redesign",
+  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "services": [
+    {
+      "name": "Discovery & Planning",
+      "description": "Mauris non tempor quam, et lacinia sapien.",
+      "price": "1200.00",
+      "unit": "FIXED",
+      "milestones": [
+        {
+          "title": "Project Kickoff",
+          "description": "Stakeholder alignment and goals definition.",
+          "dueDate": null,
+          "tasks": [
+            {
+              "title": "Stakeholder Interviews",
+              "description": "Interview key stakeholders to gather requirements.",
+              "priority": "HIGH"
+            },
+            {
+              "title": "Requirements Document",
+              "description": "Draft initial requirements and success criteria.",
+              "priority": "MEDIUM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UI/UX Design",
+      "description": "Phasellus gravida semper nisi. Vestibulum volutpat pretium libero.",
+      "price": "1800.00",
+      "unit": "FIXED",
+      "milestones": [
+        {
+          "title": "Wireframes",
+          "description": "Low-fidelity wireframes for core pages.",
+          "dueDate": null,
+          "tasks": [
+            { "title": "Homepage Wireframe", "description": "Create homepage layout." },
+            { "title": "Dashboard Wireframe", "description": "Layout for main dashboard." }
+          ]
+        },
+        {
+          "title": "High-Fidelity Designs",
+          "description": "Visual designs and components.",
+          "dueDate": null,
+          "tasks": [
+            { "title": "Design System", "description": "Typography, color, components." },
+            { "title": "Responsive Breakpoints", "description": "Tablet and mobile variants." }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Frontend Development",
+      "description": "Aenean imperdiet. Etiam ultricies nisi vel augue.",
+      "price": "2500.00",
+      "unit": "FIXED",
+      "milestones": [
+        {
+          "title": "Component Implementation",
+          "description": "Build reusable components.",
+          "dueDate": null,
+          "tasks": [
+            { "title": "Header Component", "description": "Build site header and nav." },
+            { "title": "Cards/Grid", "description": "UI building blocks." }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backend Integration",
+      "description": "Curabitur ullamcorper ultricies nisi.",
+      "price": "2200.00",
+      "unit": "FIXED",
+      "milestones": [
+        {
+          "title": "API Integration",
+          "description": "Connect frontend to API.",
+          "dueDate": null,
+          "tasks": [
+            { "title": "Auth Flow", "description": "Login, session, roles." },
+            { "title": "Projects API", "description": "List and detail endpoints." }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "QA & Deployment",
+      "description": "Etiam rhoncus. Maecenas tempus, tellus eget.",
+      "price": "800.00",
+      "unit": "FIXED",
+      "milestones": [
+        {
+          "title": "QA Cycle",
+          "description": "Smoke tests and fixes.",
+          "dueDate": null,
+          "tasks": [
+            { "title": "Smoke Tests", "description": "Critical path validation." },
+            { "title": "Deploy to Prod", "description": "Go-live steps." }
+          ]
+        }
+      ]
+    }
+  ]
+}

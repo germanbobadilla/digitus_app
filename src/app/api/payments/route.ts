@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { hasCapability } from '@/lib/auth-utils'
+import { CAPABILITIES } from '@/lib/capabilities'
 
 export async function GET(request: NextRequest) {
     try {
@@ -11,20 +13,28 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const payments = await prisma.payment.findMany({
-            where: {
-                order: {
-                    userId: session.user.id
-                }
-            },
+        // Check if user has permission to view payments
+        const canViewOwnPayments = await hasCapability(CAPABILITIES.PAYMENT_VIEW_OWN)
+        const canViewAllPayments = await hasCapability(CAPABILITIES.PAYMENT_VIEW_ALL)
+
+        if (!canViewOwnPayments && !canViewAllPayments) {
+            return NextResponse.json(
+                { error: 'You do not have permission to view payments' },
+                { status: 403 }
+            )
+        }
+
+        // Get payments based on permissions
+        const whereClause = canViewAllPayments ? {} : { userId: session.user.id }
+
+        const payments = await prisma.payments.findMany({
+            where: whereClause,
             include: {
-                order: {
-                    include: {
-                        service: {
-                            select: {
-                                name: true
-                            }
-                        }
+                users_payments_userIdTousers: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
                     }
                 }
             },
@@ -39,6 +49,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
+
+
+
+
+
 
 
 

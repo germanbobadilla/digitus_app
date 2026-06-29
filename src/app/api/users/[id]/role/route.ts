@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getUserCapabilities } from '@/lib/auth-utils'
 
 // PUT /api/users/[id]/role - Assign role to user (admin only)
 export async function PUT(
@@ -14,8 +15,9 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has admin access
-    if ((session.user as any)?.userType !== 'ADMIN') {
+    // Check if user has role management capability
+    const userCapabilities = await getUserCapabilities(session.user.id)
+    if (!userCapabilities.includes('can_manage_roles')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -76,8 +78,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has admin access
-    if ((session.user as any)?.userType !== 'ADMIN') {
+    // Check if user has role management capability
+    const userCapabilities = await getUserCapabilities(session.user.id)
+    if (!userCapabilities.includes('can_manage_roles')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

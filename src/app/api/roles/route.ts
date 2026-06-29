@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { CAPABILITIES, ROLE_DEFINITIONS, type RoleName } from '@/lib/capabilities'
+import { getUserCapabilities } from '@/lib/auth-utils'
 
 // GET /api/roles - List all roles
 export async function GET(request: NextRequest) {
@@ -12,8 +13,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has admin access
-    if ((session.user as any)?.userType !== 'ADMIN') {
+    // Check if user has role management capability
+    const userCapabilities = await getUserCapabilities(session.user.id)
+    if (!userCapabilities.includes('can_manage_roles')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -46,8 +48,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has admin access
-    if ((session.user as any)?.userType !== 'ADMIN') {
+    // Check if user has role management capability
+    const userCapabilities = await getUserCapabilities(session.user.id)
+    if (!userCapabilities.includes('can_manage_roles')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -104,8 +107,9 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has admin access
-    if ((session.user as any)?.userType !== 'ADMIN') {
+    // Check if user has role management capability
+    const userCapabilities = await getUserCapabilities(session.user.id)
+    if (!userCapabilities.includes('can_manage_roles')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -148,8 +152,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user has admin access
-    if ((session.user as any)?.userType !== 'ADMIN') {
+    // Check if user has role management capability
+    const userCapabilities = await getUserCapabilities(session.user.id)
+    if (!userCapabilities.includes('can_manage_roles')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

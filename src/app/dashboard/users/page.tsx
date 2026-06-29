@@ -9,7 +9,7 @@ interface UserRow {
     id: string
     name: string
     email: string
-    userType: 'REGULAR' | 'CORPORATION' | 'EDUCATION' | 'ADMIN'
+    userType: 'CLIENT' | 'MANAGER' | 'ADMIN'
     isActive?: boolean
     createdAt?: string
     updatedAt?: string
@@ -100,8 +100,8 @@ export default function UsersPage() {
                         <button
                             onClick={() => setActiveTab('users')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'users'
-                                    ? 'border-indigo-500 text-indigo-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             User Management
@@ -109,8 +109,8 @@ export default function UsersPage() {
                         <button
                             onClick={() => setActiveTab('roles')}
                             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'roles'
-                                    ? 'border-indigo-500 text-indigo-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             Define Role
@@ -163,7 +163,7 @@ export default function UsersPage() {
                                                     }
                                                 }}
                                             >
-                                                {['REGULAR', 'CORPORATION', 'EDUCATION', 'ADMIN'].map((r) => (
+                                                {['CLIENT', 'MANAGER', 'ADMIN'].map((r) => (
                                                     <option key={r} value={r}>{r}</option>
                                                 ))}
                                             </select>

@@ -143,3 +143,19 @@ export async function getCurrentUserWithCapabilities() {
     return null
   }
 }
+
+// Helper function to check capability with a specific user ID (for API routes)
+export async function hasCapabilityWithSession(capability: Capability, userId: string): Promise<boolean> {
+  try {
+    const capabilities = await getUserCapabilities(userId)
+    return capabilities.includes(capability)
+  } catch (error) {
+    console.error('Error checking capability with session:', error)
+    return false
+  }
+}
+
+// Client-side capability checking function
+export function hasCapabilityClient(userCapabilities: string[], capability: Capability): boolean {
+  return userCapabilities.includes(capability)
+}

@@ -134,16 +134,6 @@ export function Header({ onOpenSidebar }: HeaderProps) {
                                 </svg>
                                 Notifications
                             </a>
-                            <a
-                                href="/dashboard/settings/icons"
-                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                onClick={() => setIsProfileOpen(false)}
-                            >
-                                <svg className="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-10 0a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2M9 4a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
-                                Icon Library
-                            </a>
                         </div>
 
                         <div className="border-t border-gray-100 py-1">

@@ -33,9 +33,8 @@
   },
   "navigation": {
     "dashboard": "Panel de Control",
-    "services": "Servicios",
-    "orders": "Pedidos",
-    "payments": "Pagos",
+    "projects": "Proyectos",
+    "billing": "Facturación",
     "profile": "Perfil",
     "accountSettings": "Configuración de Cuenta",
     "preferences": "Preferencias",
@@ -144,7 +143,10 @@
     "enable": "Habilitar",
     "deleteAccount": "Eliminar Cuenta",
     "deleteAccountDesc": "Eliminar permanentemente tu cuenta y todos los datos.",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "paymentMethods": "Métodos de Pago",
+    "paymentMethodsDesc": "Gestiona tus métodos de pago para facturación y pagos fáciles.",
+    "manage": "Gestionar"
   },
   "settings": {
     "profileInformation": "Información del Perfil",
@@ -205,25 +207,47 @@
     "goToHomepage": "Ir a la Página Principal",
     "signIn": "Iniciar Sesión"
   },
-  "services": {
-    "title": "Nuestros Servicios",
-    "description": "Explora y gestiona los servicios disponibles.",
-    "comingSoon": "¡Servicios Próximamente!",
-    "comingSoonDesc": "Estamos trabajando duro para traerte un catálogo completo de servicios. Esta función estará disponible pronto.",
-    "notifyMe": "Recibir Notificación",
-    "notifyDescription": "Te notificaremos cuando los servicios estén disponibles"
-  },
-  "orders": {
-    "title": "Tus Pedidos",
-    "description": "Ve y gestiona tus pedidos de servicios.",
-    "noOrdersYet": "Aún no hay pedidos",
-    "noOrdersDesc": "Comienza explorando nuestros servicios.",
-    "browseServices": "Explorar Servicios",
-    "recentOrders": "Pedidos Recientes",
-    "totalOrders": "Total de Pedidos",
-    "pending": "Pendiente",
+  "projects": {
+    "title": "Tus Proyectos",
+    "description": "Crea y gestiona tus proyectos.",
+    "noProjectsYet": "Aún no hay proyectos",
+    "noProjectsDesc": "Comienza creando tu primer proyecto.",
+    "createProject": "Crear Proyecto",
+    "recentProjects": "Proyectos Recientes",
+    "totalProjects": "Total de Proyectos",
+    "active": "Activo",
     "completed": "Completado",
-    "cancelled": "Cancelado"
+    "archived": "Archivado",
+    "projectTitle": "Título del Proyecto",
+    "projectDescription": "Descripción del Proyecto",
+    "projectDescriptionPlaceholder": "Describe tu proyecto...",
+    "createNewProject": "Crear Nuevo Proyecto",
+    "editProject": "Editar Proyecto",
+    "deleteProject": "Eliminar Proyecto",
+    "confirmDeleteProject": "¿Estás seguro de que quieres eliminar este proyecto? Esta acción no se puede deshacer.",
+    "projectCreated": "¡Proyecto creado exitosamente!",
+    "projectUpdated": "¡Proyecto actualizado exitosamente!",
+    "projectDeleted": "¡Proyecto eliminado exitosamente!"
+  },
+  "billing": {
+    "title": "Facturación y Pagos",
+    "description": "Gestiona tus métodos de pago e información de facturación.",
+    "paymentMethods": "Métodos de Pago",
+    "addPaymentMethod": "Agregar Método de Pago",
+    "noPaymentMethods": "Sin métodos de pago",
+    "noPaymentMethodsDesc": "Agrega un método de pago para comenzar.",
+    "transactionHistory": "Historial de Transacciones",
+    "noTransactions": "Aún no hay transacciones",
+    "noTransactionsDesc": "Tu historial de pagos aparecerá aquí.",
+    "totalSpent": "Total Gastado",
+    "transactions": "Transacciones",
+    "amount": "Cantidad",
+    "method": "Método de Pago",
+    "status": "Estado",
+    "date": "Fecha",
+    "description": "Descripción",
+    "referenceNumber": "Número de Referencia",
+    "transactionId": "ID de Transacción"
   },
   "payments": {
     "title": "Tus Pagos",
@@ -237,17 +261,6 @@
     "transactions": "Transacciones",
     "paymentMethods": "Métodos de Pago",
     "transactionHistory": "Historial de Transacciones"
-  },
-  "icons": {
-    "title": "Biblioteca de Iconos (Heroicons)",
-    "description": "Esta página muestra los Heroicons utilizados en toda la aplicación. Heroicons son un conjunto de iconos SVG gratuitos con licencia MIT de los creadores de Tailwind CSS.",
-    "navigationIcons": "Iconos de Navegación",
-    "settingsIcons": "Iconos de Configuración y Usuario",
-    "howToUse": "Cómo Usar Heroicons",
-    "directUsage": "Uso Directo de SVG:",
-    "reactComponents": "Usando Componentes React (requiere instalación):",
-    "installPackage": "Primero, instala el paquete:",
-    "exampleUsage": "Ejemplo de uso:"
   },
   "languageSettings": {
     "title": "Idioma y Región",

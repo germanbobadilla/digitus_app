@@ -27,35 +27,60 @@ interface CapabilityGroup {
 
 const CAPABILITY_GROUPS: CapabilityGroup[] = [
     {
-        name: 'Order Management',
+        name: 'Project Management',
         capabilities: [
-            CAPABILITIES.ORDER_CREATE,
-            CAPABILITIES.ORDER_CREATE_FROM_SERVICE,
-            CAPABILITIES.ORDER_VIEW_OWN,
-            CAPABILITIES.ORDER_VIEW_ALL,
-            CAPABILITIES.ORDER_EDIT_OWN,
-            CAPABILITIES.ORDER_EDIT_ALL,
-            CAPABILITIES.ORDER_DELETE_OWN,
-            CAPABILITIES.ORDER_DELETE_ALL,
-            CAPABILITIES.ORDER_ASSIGN,
-            CAPABILITIES.ORDER_CHANGE_STATUS,
-            CAPABILITIES.ORDER_VIEW_HISTORY,
-            CAPABILITIES.ORDER_EXPORT,
+            CAPABILITIES.PROJECT_CREATE,
+            CAPABILITIES.PROJECT_VIEW_ASSIGNED,
+            CAPABILITIES.PROJECT_VIEW_ALL,
+            CAPABILITIES.PROJECT_EDIT_ALL,
+            CAPABILITIES.PROJECT_DELETE,
+            CAPABILITIES.PROJECT_EXPORT,
         ]
     },
     {
         name: 'Service Management',
         capabilities: [
             CAPABILITIES.SERVICE_CREATE,
-            CAPABILITIES.SERVICE_EDIT,
+            CAPABILITIES.SERVICE_READ,
+            CAPABILITIES.SERVICE_UPDATE,
             CAPABILITIES.SERVICE_DELETE,
-            CAPABILITIES.SERVICE_VIEW,
-            CAPABILITIES.SERVICE_MANAGE_CATEGORIES,
-            CAPABILITIES.SERVICE_SET_PRICING,
-            CAPABILITIES.SERVICE_SET_PRICE,
-            CAPABILITIES.SERVICE_CREATE_PHASES,
-            CAPABILITIES.SERVICE_VIEW_PHASES,
-            CAPABILITIES.SERVICE_EDIT_PHASES,
+            CAPABILITIES.SERVICE_EDIT,
+            CAPABILITIES.SERVICE_ASSIGN,
+            CAPABILITIES.SERVICE_MARK_DONE,
+        ]
+    },
+    {
+        name: 'Milestone Management',
+        capabilities: [
+            CAPABILITIES.MILESTONE_CREATE,
+            CAPABILITIES.MILESTONE_READ,
+            CAPABILITIES.MILESTONE_UPDATE,
+            CAPABILITIES.MILESTONE_DELETE,
+            CAPABILITIES.MILESTONE_EDIT,
+            CAPABILITIES.MILESTONE_MARK_DELIVERED,
+            CAPABILITIES.MILESTONE_MARK_COMPLETED,
+        ]
+    },
+    {
+        name: 'Task Management',
+        capabilities: [
+            CAPABILITIES.TASK_CREATE,
+            CAPABILITIES.TASK_READ,
+            CAPABILITIES.TASK_UPDATE,
+            CAPABILITIES.TASK_DELETE,
+        ]
+    },
+    {
+        name: 'Billing & Payments',
+        capabilities: [
+            CAPABILITIES.BILLING_VIEW_OWN,
+            CAPABILITIES.BILLING_VIEW_ALL,
+            CAPABILITIES.INVOICE_VIEW_OWN,
+            CAPABILITIES.INVOICE_VIEW_ALL,
+            CAPABILITIES.PAYMENT_VIEW_OWN,
+            CAPABILITIES.PAYMENT_VIEW_ALL,
+            CAPABILITIES.PAYMENT_PROCESS,
+            CAPABILITIES.PAYMENT_METHOD_MANAGE,
         ]
     },
     {
@@ -65,38 +90,23 @@ const CAPABILITY_GROUPS: CapabilityGroup[] = [
             CAPABILITIES.USER_CREATE,
             CAPABILITIES.USER_EDIT,
             CAPABILITIES.USER_DELETE,
-            CAPABILITIES.USER_MANAGE_ROLES,
+            CAPABILITIES.USER_MANAGE_ALL,
             CAPABILITIES.USER_ACTIVATE_DEACTIVATE,
-            CAPABILITIES.USER_VIEW_ANALYTICS,
-        ]
-    },
-    {
-        name: 'Payment Management',
-        capabilities: [
-            CAPABILITIES.PAYMENT_VIEW_OWN,
-            CAPABILITIES.PAYMENT_VIEW_ALL,
-            CAPABILITIES.PAYMENT_CONFIRM,
-            CAPABILITIES.PAYMENT_PROCESS_REFUNDS,
-            CAPABILITIES.PAYMENT_EXPORT,
         ]
     },
     {
         name: 'System Administration',
         capabilities: [
             CAPABILITIES.ADMIN_ACCESS,
-            CAPABILITIES.ADMIN_MANAGE_SETTINGS,
-            CAPABILITIES.ADMIN_VIEW_ANALYTICS,
-            CAPABILITIES.ADMIN_MANAGE_NOTIFICATIONS,
-            CAPABILITIES.ADMIN_BACKUP_DATA,
-            CAPABILITIES.ADMIN_RESTORE_DATA,
-        ]
-    },
-    {
-        name: 'Communication',
-        capabilities: [
-            CAPABILITIES.NOTIFICATION_SEND,
-            CAPABILITIES.ANNOUNCEMENT_MANAGE,
+            CAPABILITIES.SYSTEM_SETTINGS,
+            CAPABILITIES.ANALYTICS_VIEW_ALL,
+            CAPABILITIES.ROLE_MANAGE,
             CAPABILITIES.AUDIT_LOG_VIEW,
+            CAPABILITIES.ALL_SECTIONS_ACCESS,
+            CAPABILITIES.FILE_UPLOAD,
+            CAPABILITIES.FILE_VIEW,
+            CAPABILITIES.FILE_DELETE,
+            CAPABILITIES.PROFILE_VIEW_EDIT,
         ]
     }
 ]
@@ -134,13 +144,19 @@ export default function RoleManagement() {
 
     const loadRoles = async () => {
         try {
+            console.log('Loading roles...')
             const response = await fetch('/api/roles')
+            console.log('Roles response status:', response.status)
             if (response.ok) {
                 const data = await response.json()
+                console.log('Roles data received:', data)
                 setRoles(data)
                 if (data.length > 0 && !selectedRole) {
                     setSelectedRole(data[0])
                 }
+            } else {
+                const errorText = await response.text()
+                console.error('Roles API error:', response.status, errorText)
             }
         } catch (error) {
             console.error('Error loading roles:', error)

@@ -10,13 +10,13 @@ interface User {
     email: string
     image?: string
     userType?: string
+    capabilities?: string[]
 }
 
 interface AuthContextType {
     user: User | null
     isLoading: boolean
     login: (email: string, password: string) => Promise<void>
-    loginWithGoogle: () => Promise<void>
     logout: () => Promise<void>
     register: (name: string, email: string, password: string, userType: string) => Promise<void>
 }
@@ -27,12 +27,31 @@ export function NextAuthProvider({ children }: { children: React.ReactNode }) {
     const { data: session, status } = useSession()
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(true)
+    const [userCapabilities, setUserCapabilities] = useState<string[]>([])
 
+    // Fetch user capabilities when session changes
     useEffect(() => {
+        const fetchCapabilities = async () => {
+            if (session?.user?.id) {
+                try {
+                    const response = await fetch(`/api/users/${session.user.id}/capabilities`)
+                    if (response.ok) {
+                        const data = await response.json()
+                        setUserCapabilities(data.capabilities || [])
+                    }
+                } catch (error) {
+                    console.error('Error fetching user capabilities:', error)
+                }
+            } else {
+                setUserCapabilities([])
+            }
+        }
+
         if (status !== 'loading') {
+            fetchCapabilities()
             setIsLoading(false)
         }
-    }, [status])
+    }, [session, status])
 
     const login = async (email: string, password: string) => {
         const result = await signIn('credentials', {
@@ -48,9 +67,6 @@ export function NextAuthProvider({ children }: { children: React.ReactNode }) {
         router.push('/dashboard')
     }
 
-    const loginWithGoogle = async () => {
-        await signIn('google', { callbackUrl: '/dashboard' })
-    }
 
     const logout = async () => {
         await signOut({ callbackUrl: '/login' })
@@ -86,10 +102,10 @@ export function NextAuthProvider({ children }: { children: React.ReactNode }) {
             email: session.user.email || '',
             image: session.user.image || undefined,
             userType: session.user.userType,
+            capabilities: userCapabilities,
         } : null,
         isLoading,
         login,
-        loginWithGoogle,
         logout,
         register,
     }

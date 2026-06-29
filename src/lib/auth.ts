@@ -1,6 +1,5 @@
 import { NextAuthOptions } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
@@ -8,10 +7,6 @@ import bcrypt from "bcryptjs"
 export const authOptions: NextAuthOptions = {
   // adapter: PrismaAdapter(prisma) as any, // Temporarily disabled to avoid account linking issues
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -66,43 +61,11 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      // Allow Google OAuth sign-ins unconditionally (avoid blocking on DB errors)
-      if (account?.provider === "google") {
-        try {
-          // Best-effort user ensure; do not block sign-in on failure
-          const existingUser = await prisma.user.findUnique({ where: { email: user.email! } })
-
-          // Admin whitelist via env (comma-separated emails)
-          const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-          const shouldBeAdmin = adminEmails.includes((user.email || '').toLowerCase())
-
-          if (!existingUser) {
-            await prisma.user.create({
-              data: {
-                email: user.email!,
-                name: user.name || user.email!.split('@')[0],
-                image: user.image,
-                userType: shouldBeAdmin ? 'ADMIN' : 'REGULAR',
-                emailVerified: new Date(),
-              }
-            })
-            console.log("Created new user via Google OAuth:", user.email)
-          } else if (shouldBeAdmin && existingUser.userType !== 'ADMIN') {
-            await prisma.user.update({ where: { email: user.email! }, data: { userType: 'ADMIN' } })
-            console.log("Upgraded user to ADMIN via whitelist:", user.email)
-          }
-        } catch (error) {
-          console.warn("Non-blocking error in Google signIn callback:", error)
-        }
-        return true
-      }
-
-      // Allow credentials sign-ins
+      // Only allow credentials sign-ins
       if (account?.provider === "credentials") {
         return true
       }
-
-      return true
+      return false
     },
     async jwt({ token, user }) {
       if (user) {
@@ -114,8 +77,9 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { email: token.email as string },
-            select: { id: true, userType: true }
+            select: { id: true, userType: true, roleId: true }
           })
+
           if (dbUser) {
             token.userType = dbUser.userType
             token.sub = dbUser.id

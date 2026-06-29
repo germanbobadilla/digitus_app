@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useLanguage } from '@/contexts/LanguageContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 
 export default function RegisterPage() {
-    const { t } = useLanguage()
+    const { t } = useTranslation()
     const [formData, setFormData] = useState({
         name: '',
         email: '',

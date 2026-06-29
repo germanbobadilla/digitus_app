@@ -38,16 +38,13 @@ export async function DELETE(
 
         // Delete user and all related data
         await prisma.$transaction(async (prisma) => {
-            // Delete user's orders and related data
-            await prisma.orderStatusHistory.deleteMany({
-                where: { order: { userId: userId } }
+            // Delete user's projects
+            await prisma.project.deleteMany({
+                where: { userId: userId }
             })
 
+            // Delete user's payments
             await prisma.payment.deleteMany({
-                where: { order: { userId: userId } }
-            })
-
-            await prisma.order.deleteMany({
                 where: { userId: userId }
             })
 

@@ -33,9 +33,8 @@
   },
   "navigation": {
     "dashboard": "Dashboard",
-    "services": "Services",
-    "orders": "Orders",
-    "payments": "Payments",
+    "projects": "Projects",
+    "billing": "Billing",
     "profile": "Profile",
     "accountSettings": "Account Settings",
     "preferences": "Preferences",
@@ -144,7 +143,10 @@
     "enable": "Enable",
     "deleteAccount": "Delete Account",
     "deleteAccountDesc": "Permanently delete your account and all data.",
-    "delete": "Delete"
+    "delete": "Delete",
+    "paymentMethods": "Payment Methods",
+    "paymentMethodsDesc": "Manage your payment methods for easy billing and payments.",
+    "manage": "Manage"
   },
   "settings": {
     "profileInformation": "Profile Information",
@@ -205,25 +207,47 @@
     "goToHomepage": "Go to Homepage",
     "signIn": "Sign In"
   },
-  "services": {
-    "title": "Our Services",
-    "description": "Browse and manage available services.",
-    "comingSoon": "Services Coming Soon!",
-    "comingSoonDesc": "We're working hard to bring you a comprehensive service catalog. This feature will be available soon.",
-    "notifyMe": "Get Notified",
-    "notifyDescription": "We'll notify you when services are available"
-  },
-  "orders": {
-    "title": "Your Orders",
-    "description": "View and manage your service orders.",
-    "noOrdersYet": "No orders yet",
-    "noOrdersDesc": "Get started by browsing our services.",
-    "browseServices": "Browse Services",
-    "recentOrders": "Recent Orders",
-    "totalOrders": "Total Orders",
-    "pending": "Pending",
+  "projects": {
+    "title": "Your Projects",
+    "description": "Create and manage your projects.",
+    "noProjectsYet": "No projects yet",
+    "noProjectsDesc": "Get started by creating your first project.",
+    "createProject": "Create Project",
+    "recentProjects": "Recent Projects",
+    "totalProjects": "Total Projects",
+    "active": "Active",
     "completed": "Completed",
-    "cancelled": "Cancelled"
+    "archived": "Archived",
+    "projectTitle": "Project Title",
+    "projectDescription": "Project Description",
+    "projectDescriptionPlaceholder": "Describe your project...",
+    "createNewProject": "Create New Project",
+    "editProject": "Edit Project",
+    "deleteProject": "Delete Project",
+    "confirmDeleteProject": "Are you sure you want to delete this project? This action cannot be undone.",
+    "projectCreated": "Project created successfully!",
+    "projectUpdated": "Project updated successfully!",
+    "projectDeleted": "Project deleted successfully!"
+  },
+  "billing": {
+    "title": "Billing & Payments",
+    "description": "Manage your payment methods and billing information.",
+    "paymentMethods": "Payment Methods",
+    "addPaymentMethod": "Add Payment Method",
+    "noPaymentMethods": "No payment methods",
+    "noPaymentMethodsDesc": "Add a payment method to get started.",
+    "transactionHistory": "Transaction History",
+    "noTransactions": "No transactions yet",
+    "noTransactionsDesc": "Your payment history will appear here.",
+    "totalSpent": "Total Spent",
+    "transactions": "Transactions",
+    "amount": "Amount",
+    "method": "Payment Method",
+    "status": "Status",
+    "date": "Date",
+    "description": "Description",
+    "referenceNumber": "Reference Number",
+    "transactionId": "Transaction ID"
   },
   "payments": {
     "title": "Your Payments",
@@ -237,17 +261,6 @@
     "transactions": "Transactions",
     "paymentMethods": "Payment Methods",
     "transactionHistory": "Transaction History"
-  },
-  "icons": {
-    "title": "Icon Library (Heroicons)",
-    "description": "This page showcases the Heroicons used throughout the application. Heroicons are a set of free, MIT-licensed SVG icons from the creators of Tailwind CSS.",
-    "navigationIcons": "Navigation Icons",
-    "settingsIcons": "Settings & User Icons",
-    "howToUse": "How to Use Heroicons",
-    "directUsage": "Direct SVG Usage:",
-    "reactComponents": "Using React Components (requires installation):",
-    "installPackage": "First, install the package:",
-    "exampleUsage": "Example usage:"
   },
   "languageSettings": {
     "title": "Language & Region",
