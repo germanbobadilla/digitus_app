@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'welcome'            => 'Bienvenido a Digitus',
+    'tagline'            => 'Soluciones Empresariales y de Software',
+    'login'              => 'Iniciar Sesión',
+    'register'           => 'Crear Cuenta',
+    'logout'             => 'Cerrar Sesión',
+    'dashboard'          => 'Panel de Control',
+    'name'               => 'Nombre Completo',
+    'username'           => 'Nombre de Usuario',
+    'email'              => 'Correo Electrónico',
+    'password'           => 'Contraseña',
+    'confirm_password'   => 'Confirmar Contraseña',
+    'remember_me'        => 'Recordarme',
+    'forgot_password'    => '¿Olvidó su contraseña?',
+    'no_account'         => '¿No tiene una cuenta?',
+    'have_account'       => '¿Ya tiene una cuenta?',
+    'verify_email'       => 'Verifique su Correo',
+    'verify_instruction' => 'Enviamos un código de 6 dígitos a :email. Ingréselo a continuación para verificar su cuenta.',
+    'verification_code'  => 'Código de Verificación',
+    'verify'             => 'Verificar',
+    'resend_code'        => 'Reenviar Código',
+    'welcome_back'       => '¡Bienvenido de vuelta, :name!',
+    'dashboard_intro'    => 'Ha iniciado sesión en su cuenta de Digitus.',
+];

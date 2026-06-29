@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'welcome'            => 'Welcome to Digitus',
+    'tagline'            => 'Business & Software Solutions',
+    'login'              => 'Sign In',
+    'register'           => 'Create Account',
+    'logout'             => 'Sign Out',
+    'dashboard'          => 'Dashboard',
+    'name'               => 'Full Name',
+    'username'           => 'Username',
+    'email'              => 'Email Address',
+    'password'           => 'Password',
+    'confirm_password'   => 'Confirm Password',
+    'remember_me'        => 'Remember Me',
+    'forgot_password'    => 'Forgot Password?',
+    'no_account'         => 'Don\'t have an account?',
+    'have_account'       => 'Already have an account?',
+    'verify_email'       => 'Verify Your Email',
+    'verify_instruction' => 'We sent a 6-digit code to :email. Enter it below to verify your account.',
+    'verification_code'  => 'Verification Code',
+    'verify'             => 'Verify',
+    'resend_code'        => 'Resend Code',
+    'welcome_back'       => 'Welcome back, :name!',
+    'dashboard_intro'    => 'You are logged in to your Digitus account.',
+];
